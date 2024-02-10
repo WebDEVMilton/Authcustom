@@ -1,0 +1,106 @@
+error:[sass] Cannot read properties of undefined (reading 'indexOf')
+npm add node     
+npm add npm      
+
+basic builtin ui--->
+laravel building-->
+
+-->
+composer require laravel/ui
+
+-->
+php artisan ui bootstrap --auth
+
+-->
+npm istall
+-->
+npm run dev
+
+custome -->model,controller,view create..
+
+changhe custome model
+admin.php-->model
+
+make the migration 
+admin table
+
+add-->use Illuminate\Foundation\Auth\User as Authenticatable;
+
+class admin extends Authenticatable
+{
+    use HasFactory;
+    protected $fillable = [
+        'name',
+        'email',
+        'password',
+    ];
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+}
+config->auth.php.
+add this one after the guards
+        'admin' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
+
+then add provider-->
+'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
+        ],
+
+Now create middleware-->
+php artisan make:middleware Admin
+now go to http-->
+
+add logic in middleware-->
+use Auth;
+
+if(!Auth::guard('admin')->check()){
+            return redirect('/admin/login');
+
+        }
+
+add new middleware-> karnel.php
+ 'admin' => \App\Http\Middleware\Admin::class,
+
+now go to web.php
+
+Route::group(['prefix'=>'admin','middleware'=>'admin'],function(){
+    Route::get('/dashboard', [dashboardController::class, 'index'])->name('admin.dashboard');
+});
+
+
+controller-->
+
+ public function login(Request $request){
+        $request->validate([
+            'email'=>'required',
+            'password'=>'required',
+        ]);
+        if(Auth::guard('admin')->attempt(['email'=>$request->email,'password'=>$request->password])){
+            return redirect('/admin/dashboard');
+        }else{
+            Session::flash('err','invalid pass');
+            return redirect()->back();
+        }
+       
+    }
+
+
+ public function logout(){
+        Auth::guard('admin')->logout();
+        return redirect('/admin/login');
+    }
+
+web.php
+
+Route::post('admin-login', [loginController::class, 'adminlogin'])->name('admin.login');
+
+
+
+
+
